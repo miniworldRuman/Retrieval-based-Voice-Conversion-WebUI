@@ -43,14 +43,16 @@ manifest_path = ""
 
 if __name__ == "__main__":
     inp_root, sr, n_p, exp_dir, noparallel, per, manifest_path = get_args()
-
-f = open("%s/preprocess.log" % exp_dir, "a", encoding="utf8")
+    f = open("%s/preprocess.log" % exp_dir, "a", encoding="utf8")
 
 
 def println(strr):
     print(strr)
-    f.write("%s\n" % strr)
-    f.flush()
+    try:
+        f.write("%s\n" % strr)
+        f.flush()
+    except NameError:
+        pass
 
 
 class PreProcess:
