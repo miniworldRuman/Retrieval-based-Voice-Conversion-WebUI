@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.abspath(__file__))))
 import os
 import sys
 import traceback

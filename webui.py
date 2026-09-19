@@ -11,6 +11,14 @@ warnings.filterwarnings(
     category=UserWarning,
 )
 
+# Deprecated: webui.py is deprecated. Use RVC_Notebook.ipynb instead.
+# This file is kept for backward compatibility only.
+warnings.warn(
+    "webui.py is deprecated. Use RVC_Notebook.ipynb for training and inference.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 # Offline WebUI keeps the CUDA Graph implementation available, but remains
 # eager by default. Set RVC_OFFLINE_CUDA_GRAPH=1 to opt in for benchmarking or
 # controlled deployments.

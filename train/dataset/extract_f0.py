@@ -1,5 +1,7 @@
-import os
-import sys
+import sys, os
+_sys_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _sys_path not in sys.path:
+    sys.path.insert(0, _sys_path)
 import traceback
 
 import parselmouth

@@ -8,9 +8,9 @@
 # CPU versions are therefore intentional. DirectML is installed only on Windows;
 # Linux AMD/Intel systems use the CPU execution path.
 
---index-url https://mirrors.pku.edu.cn/pypi/simple
---extra-index-url https://mirrors.nju.edu.cn/pytorch/whl/cpu
---extra-index-url https://pypi.org/simple
+#--index-url https://mirrors.pku.edu.cn/pypi/simple
+--extra-index-url https://download.pytorch.org/whl/cpu
+#--extra-index-url https://pypi.org/simple
 
 torch==2.4.1+cpu
 torchaudio==2.4.1+cpu

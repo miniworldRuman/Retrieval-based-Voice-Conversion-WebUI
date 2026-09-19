@@ -1,6 +1,9 @@
+import sys, os
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
 import multiprocessing
 import os
-import sys
 
 from scipy import signal
 
@@ -12,10 +15,16 @@ from scipy.io import wavfile
 
 os.environ["RVC_AUDIO_FORCE_CPU"] = "1"
 from infer.audio import load_audio
-from train.dataset.slicer2 import Slicer
 from i18n.i18n import I18nAuto
 from tools.progress import should_report
 from tools.multispeaker import ManifestError, load_manifest
+
+import importlib.util as _ilu
+_slicer_path = os.path.join(os.path.dirname(__file__), "dataset", "slicer2.py")
+_slicer_spec = _ilu.spec_from_file_location("slicer2", _slicer_path)
+_slicer_mod = _ilu.module_from_spec(_slicer_spec)
+_slicer_spec.loader.exec_module(_slicer_mod)
+Slicer = _slicer_mod.Slicer
 
 i18n = I18nAuto()
 
@@ -120,13 +129,12 @@ class PreProcess:
                     i += 1
                     if len(audio[start:]) > self.tail * self.sr:
                         tmp_audio = audio[start : start + int(self.per * self.sr)]
+                        idx1 += 1
                         self.norm_write(tmp_audio, output_key, idx1)
-                        idx1 += 1
                     else:
-                        tmp_audio = audio[start:]
                         idx1 += 1
+                        self.norm_write(audio[start:], output_key, idx1)
                         break
-            self.norm_write(tmp_audio, output_key, idx1)
             if should_report(progress_index, total):
                 println(
                     i18n("[数据切分] 进度：%s/%s | %s")
