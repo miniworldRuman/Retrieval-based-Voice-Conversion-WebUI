@@ -17,42 +17,48 @@ i18n = I18nAuto()
 logging.getLogger("numba").setLevel(logging.WARNING)
 from multiprocessing import Process
 
-mode = sys.argv[1].lower()
-if mode == "cpu":
-    exp_dir = sys.argv[2]
-    n_p = int(sys.argv[3])
-    f0method = sys.argv[4]
-    device = "cpu"
-    is_half = False
-elif mode == "cuda":
-    n_part = int(sys.argv[2])
-    i_part = int(sys.argv[3])
-    i_gpu = sys.argv[4]
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(i_gpu)
-    exp_dir = sys.argv[5]
-    is_half = sys.argv[6].lower() == "true"
-    f0method = "rmvpe"
-    device = "cuda"
-elif mode in ("dml", "directml"):
-    exp_dir = sys.argv[2]
-    f0method = "rmvpe"
-    is_half = False
-    import torch_directml
 
-    device = torch_directml.device(torch_directml.default_device())
-else:
-    raise ValueError("Unsupported F0 extraction mode: %s" % mode)
+def get_args():
+    if len(sys.argv) < 5:
+        raise ValueError("Usage: python extract_f0.py <mode> <exp_dir> <n_p> <f0method> [is_half]")
+    mode = sys.argv[1].lower()
+    if mode == "cpu":
+        exp_dir = sys.argv[2]
+        n_p = int(sys.argv[3])
+        f0method = sys.argv[4]
+        device = "cpu"
+        is_half = False
+    elif mode == "cuda":
+        n_part = int(sys.argv[2])
+        i_part = int(sys.argv[3])
+        i_gpu = sys.argv[4]
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(i_gpu)
+        exp_dir = sys.argv[5]
+        is_half = sys.argv[6].lower() == "true" if len(sys.argv) > 6 else True
+        f0method = "rmvpe"
+        device = "cuda"
+    elif mode in ("dml", "directml"):
+        exp_dir = sys.argv[2]
+        f0method = "rmvpe"
+        is_half = False
+        import torch_directml
 
-# CUDA_VISIBLE_DEVICES must be set before infer.audio imports torch/configs.
-from infer.audio import load_audio
+        device = torch_directml.device(torch_directml.default_device())
+    else:
+        raise ValueError("Unsupported F0 extraction mode: %s" % mode)
+    return mode, exp_dir, n_p, f0method, device, is_half
 
-f = open("%s/extract_f0_feature.log" % exp_dir, "a", encoding="utf8")
+
+mode = "cpu"
+exp_dir = ""
+n_p = 1
+f0method = "rmvpe"
+device = "cpu"
+is_half = False
+n_part = 1
+i_part = 0
 
 
-def printt(strr):
-    print(strr)
-    f.write("%s\n" % strr)
-    f.flush()
 class FeatureInput(object):
     def __init__(self, samplerate=16000, hop_size=160):
         self.fs = samplerate
@@ -67,6 +73,9 @@ class FeatureInput(object):
     def compute_f0(self, path, f0_method):
         if f0_method not in ("pm", "rmvpe"):
             raise ValueError(i18n("仅支持pm和rmvpe音高提取算法"))
+        # CUDA_VISIBLE_DEVICES must be set before infer.audio imports torch/configs.
+        from infer.audio import load_audio
+
         x = load_audio(path, self.fs)
         p_len = x.shape[0] // self.hop
         if f0_method == "pm":
@@ -89,7 +98,7 @@ class FeatureInput(object):
                     f0, [[pad_size, p_len - len(f0) - pad_size]], mode="constant"
                 )
         elif f0_method == "rmvpe":
-            if hasattr(self, "model_rmvpe") == False:
+            if not hasattr(self, "model_rmvpe"):
                 from infer.rmvpe import RMVPE
 
                 printt(i18n("正在加载RMVPE模型"))
@@ -172,9 +181,19 @@ class FeatureInput(object):
             )
 
 
+def printt(strr):
+    log_path = "%s/extract_f0_feature.log" % exp_dir
+    with open(log_path, "a", encoding="utf8") as f:
+        print(strr)
+        f.write("%s\n" % strr)
+        f.flush()
+
+
 if __name__ == "__main__":
-    # exp_dir=r"E:\codes\py39\dataset\mi-test"
-    # n_p=16
+    mode, exp_dir, n_p, f0method, device, is_half = get_args()
+    n_part = int(sys.argv[2]) if mode == "cuda" else 1
+    i_part = int(sys.argv[3]) if mode == "cuda" else 0
+
     featureInput = FeatureInput()
     paths = []
     inp_root = "%s/1_16k_wavs" % (exp_dir)

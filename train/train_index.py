@@ -15,11 +15,26 @@ from tools.progress import should_report
 i18n = I18nAuto()
 
 
-exp_name = sys.argv[1]
-version = sys.argv[2]
-outside_index_root = sys.argv[3]
-n_cpu = int(sys.argv[4])
-index_mode = sys.argv[5] if len(sys.argv) > 5 else "auto"
+def get_args():
+    if len(sys.argv) < 5:
+        raise ValueError("Usage: python train_index.py <exp_name> <version> <outside_index_root> <n_cpu> [index_mode]")
+    exp_name = sys.argv[1]
+    version = sys.argv[2]
+    outside_index_root = sys.argv[3]
+    n_cpu = int(sys.argv[4])
+    index_mode = sys.argv[5] if len(sys.argv) > 5 else "auto"
+    return exp_name, version, outside_index_root, n_cpu, index_mode
+
+
+exp_name = ""
+version = "v2"
+outside_index_root = ""
+n_cpu = 4
+index_mode = "auto"
+
+if __name__ == "__main__":
+    exp_name, version, outside_index_root, n_cpu, index_mode = get_args()
+
 exp_dir = os.path.join("logs", exp_name)
 feature_dir = os.path.join(
     exp_dir, "3_feature256" if version == "v1" else "3_feature768"
@@ -32,10 +47,6 @@ def log(message):
     print(message, flush=True)
     with open(log_path, "a", encoding="utf8") as f:
         f.write(str(message) + "\n")
-
-
-with open(log_path, "w", encoding="utf8"):
-    pass
 
 
 def newest_index(pattern):
@@ -245,5 +256,8 @@ def train_one_speaker(speaker_id, paths):
     link_added_index(added_path, speaker_id)
 
 
-for speaker_id in sorted(feature_groups, key=lambda value: -1 if value is None else value):
-    train_one_speaker(speaker_id, feature_groups[speaker_id])
+if __name__ == "__main__":
+    with open(log_path, "w", encoding="utf8"):
+        pass
+    for speaker_id in sorted(feature_groups, key=lambda value: -1 if value is None else value):
+        train_one_speaker(speaker_id, feature_groups[speaker_id])

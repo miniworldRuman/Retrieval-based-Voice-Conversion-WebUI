@@ -4,13 +4,6 @@ import sys
 
 from scipy import signal
 
-inp_root = sys.argv[1]
-sr = int(sys.argv[2])
-n_p = int(sys.argv[3])
-exp_dir = sys.argv[4]
-noparallel = sys.argv[5] == "True"
-per = float(sys.argv[6])
-manifest_path = sys.argv[7] if len(sys.argv) > 7 else ""
 import traceback
 
 import librosa
@@ -25,6 +18,31 @@ from tools.progress import should_report
 from tools.multispeaker import ManifestError, load_manifest
 
 i18n = I18nAuto()
+
+
+def get_args():
+    if len(sys.argv) < 7:
+        raise ValueError("Usage: python preprocess.py <inp_root> <sr> <n_p> <exp_dir> <noparallel> <per> [manifest_path]")
+    inp_root = sys.argv[1]
+    sr = int(sys.argv[2])
+    n_p = int(sys.argv[3])
+    exp_dir = sys.argv[4]
+    noparallel = sys.argv[5] == "True"
+    per = float(sys.argv[6])
+    manifest_path = sys.argv[7] if len(sys.argv) > 7 else ""
+    return inp_root, sr, n_p, exp_dir, noparallel, per, manifest_path
+
+
+inp_root = None
+sr = None
+n_p = None
+exp_dir = None
+noparallel = False
+per = 3.7
+manifest_path = ""
+
+if __name__ == "__main__":
+    inp_root, sr, n_p, exp_dir, noparallel, per, manifest_path = get_args()
 
 f = open("%s/preprocess.log" % exp_dir, "a", encoding="utf8")
 

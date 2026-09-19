@@ -2,19 +2,6 @@ import os
 import sys
 import traceback
 
-device = sys.argv[1]
-n_part = int(sys.argv[2])
-i_part = int(sys.argv[3])
-if len(sys.argv) == 7:
-    exp_dir = sys.argv[4]
-    version = sys.argv[5]
-    is_half = sys.argv[6].lower() == "true"
-else:
-    i_gpu = sys.argv[4]
-    exp_dir = sys.argv[5]
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(i_gpu)
-    version = sys.argv[6]
-    is_half = sys.argv[7].lower() == "true"
 import numpy as np
 import soundfile as sf
 import torch
@@ -30,7 +17,38 @@ from infer.hubert import (
 from i18n.i18n import I18nAuto
 from tools.progress import should_report
 
+
 i18n = I18nAuto()
+
+
+def get_args():
+    if len(sys.argv) < 5:
+        raise ValueError("Usage: python extract_hubert_feature.py <device> <n_part> <i_part> <exp_dir> <version> [is_half]")
+    device = sys.argv[1]
+    n_part = int(sys.argv[2])
+    i_part = int(sys.argv[3])
+    if len(sys.argv) == 7:
+        exp_dir = sys.argv[4]
+        version = sys.argv[5]
+        is_half = sys.argv[6].lower() == "true"
+    else:
+        i_gpu = sys.argv[4]
+        exp_dir = sys.argv[5]
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(i_gpu)
+        version = sys.argv[6]
+        is_half = sys.argv[7].lower() == "true"
+    return device, n_part, i_part, exp_dir, version, is_half
+
+
+device = "cpu"
+n_part = 1
+i_part = 0
+exp_dir = ""
+version = "v2"
+is_half = False
+
+if __name__ == "__main__":
+    device, n_part, i_part, exp_dir, version, is_half = get_args()
 
 if "privateuseone" not in device:
     device = "cpu"
