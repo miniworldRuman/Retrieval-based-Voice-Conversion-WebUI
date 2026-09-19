@@ -3,14 +3,12 @@
 # Install in two stages from the project root. Torch and Torchaudio are NOT
 # listed below, so the second command cannot replace the verified cu130 pair.
 #
-# Stage 1 - install the matching CUDA 13.0 pair (Torch must stay below 2.8):
-#   python -m pip install torch==2.7.1+cu130 torchaudio==2.7.1+cu130 --index-url https://download.pytorch.org/whl/cu130
+# Stage 1 - install the matching CUDA 13.0 pair (Torch must stay below 2.15):
+#   python -m pip install "torch>=2.9.0+cu130,<2.15" "torchaudio>=2.9.0+cu130,<2.15" --index-url https://download.pytorch.org/whl/cu130
 #
 # Stage 2 - install all remaining project dependencies:
 #   python -m pip install -r requirments_cu13_py312.txt
 # Windows portable runtime users may replace `python` with `runtime\python.exe -I`.
-
-#--index-url https://pypi.org/simple
 
 # Packaging support. Gradio 3.14 still imports pkg_resources, so Setuptools
 # must remain on the last generation that provides it.
@@ -29,7 +27,7 @@ librosa>=0.10.2,<0.11
 local-attention>=1.11.0,<2
 matplotlib>=3.8.2,<4
 networkx>=3.2.0,<4
-numpy>=1.26.4,<2
+numpy>=2.0.0,<3
 
 # Five-model MSST inference backend. Install both packages from the index;
 # local wheel paths are intentionally not used by this requirements file.
